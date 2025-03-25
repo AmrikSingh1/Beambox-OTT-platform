@@ -13,7 +13,7 @@ import '../features/profile/screens/profile_screen.dart';
 
 // Router configuration
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/onboarding',
   debugLogDiagnostics: true,
   routes: [
     // Splash and Auth routes
@@ -43,11 +43,10 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(
-      path: '/player/:id',
+      path: '/player',
       builder: (context, state) {
-        final contentId = state.pathParameters['id']!;
-        final odyseeUrl = state.uri.queryParameters['url'] ?? '';
-        return PlayerScreen(contentId: contentId, odyseeUrl: odyseeUrl);
+        final videoUrl = state.uri.queryParameters['url'] ?? 'https://odysee.com/@MovieTrailer:8/BLOODANDMONEY:8';
+        return PlayerScreen(videoUrl: videoUrl);
       },
     ),
     GoRoute(

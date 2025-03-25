@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../config/theme.dart';
 import '../../../models/content_item.dart';
@@ -46,23 +45,14 @@ class ContentCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    // Image
-                    CachedNetworkImage(
-                      imageUrl: item.imageUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: AppTheme.primaryColor.withOpacity(0.2),
-                        child: const Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: AppTheme.primaryColor.withOpacity(0.2),
-                        child: const Center(
-                          child: Icon(
-                            Icons.broken_image,
-                            color: Colors.white54,
-                          ),
+                    // Image - using a placeholder color instead of network image
+                    Container(
+                      color: AppTheme.primaryColor.withOpacity(0.5),
+                      child: const Center(
+                        child: Icon(
+                          Icons.movie,
+                          color: Colors.white70,
+                          size: 40,
                         ),
                       ),
                     ),

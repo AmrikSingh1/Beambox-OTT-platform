@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'dart:async';
 
 import '../../../config/theme.dart';
+import '../../../services/firebase_auth_service.dart';
 // import 'onboarding_screen.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
@@ -25,13 +27,17 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 2));
     
     if (mounted) {
-      // Using GoRouter instead of Navigator.pushReplacement
-      context.go('/home');
+      // Always navigate to onboarding screen first for new users
+      // You can add a preference check later once the flow is established
+      context.go('/onboarding');
       
-      // Original code that goes to onboarding
-      // Navigator.of(context).pushReplacement(
-      //   MaterialPageRoute(builder: (_) => const OnboardingScreen()),
-      // );
+      // Previous logic for checking login, keep as a comment for now
+      // final isLoggedIn = ref.read(isLoggedInProvider);
+      // if (isLoggedIn) {
+      //   context.go('/home');
+      // } else {
+      //   context.go('/onboarding');
+      // }
     }
   }
 

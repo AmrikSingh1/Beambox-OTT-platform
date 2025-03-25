@@ -39,47 +39,40 @@ class FeaturedContent extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Background image
+          // Background - using gradient instead of image
           Container(
-            color: AppTheme.primaryColor.withOpacity(0.2),
-            child: Opacity(
-              opacity: 0.7,
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-                errorWidget: (context, url, error) => const Center(
-                  child: Icon(Icons.error),
-                ),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppTheme.primaryColor,
+                  AppTheme.accentColor,
+                ],
               ),
             ),
           ),
           
-          // Gradient overlay for better text readability
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.9),
-                  ],
-                  stops: const [0.5, 1.0],
-                ),
+          // Gradient overlay
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withOpacity(0.9),
+                ],
+                stops: const [0.4, 1.0],
               ),
             ),
           ),
           
-          // Content information
-          Positioned(
-            bottom: 48,
-            left: 24,
-            right: 24,
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(24.0),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Tags
@@ -104,7 +97,7 @@ class FeaturedContent extends StatelessWidget {
                   }).toList(),
                 ),
                 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 
                 // Title
                 Text(
@@ -113,8 +106,10 @@ class FeaturedContent extends StatelessWidget {
                     color: Colors.white,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
+                    letterSpacing: 1.2,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 
                 const SizedBox(height: 12),
@@ -123,32 +118,31 @@ class FeaturedContent extends StatelessWidget {
                 Text(
                   description,
                   style: TextStyle(
-                    color: AppTheme.textSecondary,
+                    color: Colors.white.withOpacity(0.8),
                     fontSize: 14,
-                    height: 1.4,
                   ),
-                  maxLines: 2,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
                 
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 
-                // Action buttons
+                // Buttons
                 Row(
                   children: [
                     // Play button
                     ElevatedButton.icon(
                       onPressed: onPlay,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
                       icon: const Icon(Icons.play_arrow),
                       label: const Text('Play'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                      ),
                     ),
                     
                     const SizedBox(width: 16),
@@ -156,16 +150,16 @@ class FeaturedContent extends StatelessWidget {
                     // Info button
                     OutlinedButton.icon(
                       onPressed: onInfo,
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.white, width: 1),
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
                       icon: const Icon(Icons.info_outline),
                       label: const Text('More Info'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                      ),
                     ),
                   ],
                 ),

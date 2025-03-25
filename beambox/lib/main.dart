@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'config/theme.dart';
 import 'config/router.dart';
@@ -12,6 +13,9 @@ void main() async {
   
   // Initialize Hive for local storage
   await Hive.initFlutter();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp();
   
   // Set status bar to transparent
   SystemChrome.setSystemUIOverlayStyle(

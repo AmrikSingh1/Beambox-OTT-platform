@@ -1,77 +1,159 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:glassmorphism/glassmorphism.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../config/theme.dart';
+import '../../../services/firebase_auth_service.dart';
+import '../../../widgets/glassmorphic_container.dart';
+import '../../../widgets/custom_button.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends HookConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isLoading = useState(false);
+    final authService = ref.watch(firebaseAuthServiceProvider);
+    
+    // Mock user data
+    final userData = {
+      'name': 'Alex Johnson',
+      'email': ref.watch(currentUserProvider)?.email ?? 'user@example.com',
+      'avatar': 'https://randomuser.me/api/portraits/men/32.jpg',
+      'plan': 'Premium',
+      'joinedDate': 'January 2023',
+      'watchlist': 7,
+      'favoritesCount': 12,
+      'watchHistory': 28,
+    };
 
-class _ProfileScreenState extends State<ProfileScreen> {
-  // Mock user data
-  final Map<String, dynamic> _userData = {
-    'name': 'Alex Johnson',
-    'email': 'alex.johnson@example.com',
-    'avatar': 'https://randomuser.me/api/portraits/men/32.jpg',
-    'plan': 'Premium',
-    'joinedDate': 'January 2023',
-    'watchlist': 7,
-    'favoritesCount': 12,
-    'watchHistory': 28,
-  };
+    final settingsOptions = [
+      {
+        'title': 'Account',
+        'icon': Icons.person_outline,
+        'items': [
+          {'title': 'Edit Profile', 'icon': Icons.edit_outlined},
+          {'title': 'Change Password', 'icon': Icons.lock_outline},
+          {'title': 'Subscription Plan', 'icon': Icons.card_membership_outlined},
+          {'title': 'Payment Methods', 'icon': Icons.credit_card_outlined},
+        ],
+      },
+      {
+        'title': 'Preferences',
+        'icon': Icons.settings_outlined,
+        'items': [
+          {'title': 'Theme', 'icon': Icons.palette_outlined},
+          {'title': 'Notifications', 'icon': Icons.notifications_outlined},
+          {'title': 'Language', 'icon': Icons.language_outlined},
+          {'title': 'Playback Settings', 'icon': Icons.play_circle_outline},
+        ],
+      },
+      {
+        'title': 'Privacy & Security',
+        'icon': Icons.security_outlined,
+        'items': [
+          {'title': 'Privacy Settings', 'icon': Icons.privacy_tip_outlined},
+          {'title': 'Data Usage', 'icon': Icons.data_usage_outlined},
+          {'title': 'Download Quality', 'icon': Icons.high_quality_outlined},
+        ],
+      },
+    ];
+    
+    // Logout function
+    Future<void> handleLogout() async {
+      try {
+        isLoading.value = true;
+        
+        // Show a fancy logout animation
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => Center(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceColor,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withOpacity(0.3),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Logging out...',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+        
+        // Sign out from Firebase
+        await authService.signOut();
+        
+        if (context.mounted) {
+          // Dismiss the dialog
+          Navigator.of(context).pop();
+          
+          // Navigate with hero animation to onboarding
+          context.go('/onboarding');
+        }
+      } catch (e) {
+        // Show error message
+        if (context.mounted) {
+          Navigator.of(context).pop(); // Dismiss dialog if open
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Logout failed: ${e.toString()}')),
+          );
+        }
+      } finally {
+        isLoading.value = false;
+      }
+    }
 
-  final List<Map<String, dynamic>> _settingsOptions = [
-    {
-      'title': 'Account',
-      'icon': Icons.person_outline,
-      'items': [
-        {'title': 'Edit Profile', 'icon': Icons.edit_outlined},
-        {'title': 'Change Password', 'icon': Icons.lock_outline},
-        {'title': 'Subscription Plan', 'icon': Icons.card_membership_outlined},
-        {'title': 'Payment Methods', 'icon': Icons.credit_card_outlined},
-      ],
-    },
-    {
-      'title': 'Preferences',
-      'icon': Icons.settings_outlined,
-      'items': [
-        {'title': 'Theme', 'icon': Icons.palette_outlined},
-        {'title': 'Notifications', 'icon': Icons.notifications_outlined},
-        {'title': 'Language', 'icon': Icons.language_outlined},
-        {'title': 'Playback Settings', 'icon': Icons.play_circle_outline},
-      ],
-    },
-    {
-      'title': 'Privacy & Security',
-      'icon': Icons.security_outlined,
-      'items': [
-        {'title': 'Privacy Settings', 'icon': Icons.privacy_tip_outlined},
-        {'title': 'Data Usage', 'icon': Icons.data_usage_outlined},
-        {'title': 'Download Quality', 'icon': Icons.high_quality_outlined},
-      ],
-    },
-  ];
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('Profile'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: handleLogout,
+            tooltip: 'Logout',
+          ).animate().fade(duration: 500.ms).scale(),
+        ],
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _buildProfileHeader(),
+              _buildProfileHeader(userData),
               const SizedBox(height: 24),
-              _buildProfileStats(),
+              _buildProfileStats(userData),
               const SizedBox(height: 32),
-              _buildSettingsSection(),
+              _buildSettingsSection(context, settingsOptions),
               const SizedBox(height: 24),
-              _buildLogoutButton(),
+              _buildLogoutButton(handleLogout, isLoading.value),
               const SizedBox(height: 40),
             ],
           ),
@@ -80,7 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(Map<String, dynamic> userData) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 32),
       decoration: BoxDecoration(
@@ -111,22 +193,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Padding(
               padding: const EdgeInsets.all(3.0), // Border width
               child: ClipOval(
-                child: CachedNetworkImage(
-                  imageUrl: _userData['avatar'],
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: AppTheme.cardColor,
-                    child: const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: AppTheme.cardColor,
-                    child: const Icon(
-                      Icons.person,
-                      size: 40,
-                      color: Colors.white54,
-                    ),
+                child: Container(
+                  color: AppTheme.surfaceColor,
+                  child: const Icon(
+                    Icons.person,
+                    size: 50,
+                    color: Colors.white70,
                   ),
                 ),
               ),
@@ -140,7 +212,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           
           // User name
           Text(
-            _userData['name'],
+            userData['name'],
             style: const TextStyle(
               color: Colors.white,
               fontSize: 24,
@@ -155,7 +227,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           
           // User email
           Text(
-            _userData['email'],
+            userData['email'],
             style: TextStyle(
               color: AppTheme.textSecondary,
               fontSize: 14,
@@ -195,7 +267,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  _userData['plan'],
+                  userData['plan'],
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14,
@@ -213,15 +285,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileStats() {
+  Widget _buildProfileStats(Map<String, dynamic> userData) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildStatItem('Watchlist', _userData['watchlist'].toString(), Icons.bookmark_border),
-          _buildStatItem('Favorites', _userData['favoritesCount'].toString(), Icons.favorite_border),
-          _buildStatItem('History', _userData['watchHistory'].toString(), Icons.history),
+          _buildStatItem('Watchlist', userData['watchlist'].toString(), Icons.bookmark_border),
+          _buildStatItem('Favorites', userData['favoritesCount'].toString(), Icons.favorite_border),
+          _buildStatItem('History', userData['watchHistory'].toString(), Icons.history),
         ],
       ),
     )
@@ -237,20 +309,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildStatItem(String title, String count, IconData icon) {
     return GlassmorphicContainer(
-      width: 100,
-      height: 100,
       borderRadius: 16,
       blur: 10,
-      alignment: Alignment.center,
-      border: 1,
-      linearGradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          AppTheme.surfaceColor.withOpacity(0.3),
-          AppTheme.surfaceColor.withOpacity(0.1),
-        ],
-      ),
+      opacity: 0.2,
       borderGradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -259,37 +320,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
           AppTheme.textMuted.withOpacity(0.2),
         ],
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color: AppTheme.primaryColor,
-            size: 28,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            count,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              color: AppTheme.textSecondary,
-              fontSize: 12,
-            ),
-          ),
+      backgroundGradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          AppTheme.surfaceColor.withOpacity(0.3),
+          AppTheme.surfaceColor.withOpacity(0.1),
         ],
+      ),
+      child: SizedBox(
+        width: 100,
+        height: 100,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: AppTheme.primaryColor,
+              size: 28,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              count,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildSettingsSection() {
+  Widget _buildSettingsSection(BuildContext context, List<Map<String, dynamic>> settingsOptions) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -309,35 +382,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 16),
           
           // Settings groups
-          ..._settingsOptions.map((group) => _buildSettingsGroup(group)).toList(),
+          ...settingsOptions.map((group) => _buildSettingsGroup(context, group)).toList(),
         ],
       ),
     );
   }
 
-  Widget _buildSettingsGroup(Map<String, dynamic> group) {
+  Widget _buildSettingsGroup(BuildContext context, Map<String, dynamic> group) {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Group header
+          // Group heading
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: const EdgeInsets.only(left: 16, bottom: 12),
             child: Row(
               children: [
                 Icon(
-                  group['icon'],
+                  group['icon'] as IconData,
                   color: AppTheme.primaryColor,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  group['title'],
+                  group['title'] as String,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -349,26 +418,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           
           // Group items
-          ...(group['items'] as List<Map<String, dynamic>>).map(
-            (item) => ListTile(
-              leading: Icon(
-                item['icon'],
-                color: AppTheme.textSecondary,
-                size: 20,
-              ),
-              title: Text(
-                item['title'],
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                ),
-              ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                color: AppTheme.textMuted,
-                size: 16,
-              ),
-              onTap: () {},
+          GlassmorphicContainer(
+            borderRadius: 16,
+            blur: 10,
+            opacity: 0.2,
+            borderGradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppTheme.textMuted.withOpacity(0.2),
+                AppTheme.textMuted.withOpacity(0.1),
+              ],
+            ),
+            backgroundGradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppTheme.surfaceColor.withOpacity(0.4),
+                AppTheme.surfaceColor.withOpacity(0.2),
+              ],
+            ),
+            child: Column(
+              children: [
+                ...(group['items'] as List<Map<String, dynamic>>)
+                    .map((item) => _buildSettingsItem(context, item))
+                    .toList(),
+              ],
             ),
           ),
         ],
@@ -376,35 +451,64 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildLogoutButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40),
-      child: ElevatedButton(
-        onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.surfaceColor,
-          foregroundColor: AppTheme.textSecondary,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 0,
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.logout, size: 18),
-            SizedBox(width: 8),
-            Text(
-              'Log Out',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+  Widget _buildSettingsItem(BuildContext context, Map<String, dynamic> item) {
+    return ListTile(
+      leading: Icon(
+        item['icon'] as IconData,
+        color: AppTheme.textSecondary,
+        size: 20,
+      ),
+      title: Text(
+        item['title'] as String,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
         ),
       ),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        color: AppTheme.textMuted,
+        size: 16,
+      ),
+      onTap: () {},
     );
+  }
+
+  Widget _buildLogoutButton(VoidCallback onLogout, bool isLoading) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: GlassmorphicContainer(
+        borderRadius: 16,
+        blur: 10,
+        opacity: 0.1,
+        borderGradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withOpacity(0.3),
+            Colors.white.withOpacity(0.1),
+          ],
+        ),
+        backgroundGradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppTheme.primaryColor.withOpacity(0.1),
+            AppTheme.surfaceColor.withOpacity(0.2),
+          ],
+        ),
+        child: CustomButton(
+          text: 'Logout to Get Started Page',
+          onPressed: onLogout,
+          isLoading: isLoading,
+          isPrimary: false,
+          icon: Icons.logout,
+          backgroundColor: Colors.transparent,
+          textColor: AppTheme.primaryColor,
+        ),
+      ),
+    ).animate()
+      .fade(delay: 800.ms, duration: 400.ms)
+      .slideY(begin: 20, end: 0, delay: 800.ms, duration: 400.ms, curve: Curves.easeOutQuint);
   }
 } 

@@ -7,21 +7,19 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import '../../../config/theme.dart';
 
 class PlayerScreen extends StatefulWidget {
-  final String contentId;
-  final String odyseeUrl;
+  final String videoUrl;
 
   const PlayerScreen({
-    super.key,
-    required this.contentId,
-    required this.odyseeUrl,
-  });
+    Key? key,
+    required this.videoUrl,
+  }) : super(key: key);
 
   @override
   State<PlayerScreen> createState() => _PlayerScreenState();
 }
 
 class _PlayerScreenState extends State<PlayerScreen> {
-  late final WebViewController _controller;
+  late WebViewController _controller;
   bool _isLoading = true;
   bool _isFullScreen = false;
 
@@ -36,8 +34,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
       DeviceOrientation.portraitUp,
     ]);
     
-    // Create WebView controller
-    _initWebViewController();
+    _initWebView();
   }
 
   @override
@@ -51,21 +48,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
     super.dispose();
   }
 
-  void _initWebViewController() {
-    late final PlatformWebViewControllerCreationParams params;
-    
-    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
-      params = WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-        mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
-      );
-    } else {
-      params = const PlatformWebViewControllerCreationParams();
-    }
-
-    final WebViewController controller = WebViewController.fromPlatformCreationParams(params);
-    
-    controller
+  void _initWebView() {
+    _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.black)
       ..setNavigationDelegate(
@@ -87,16 +71,14 @@ class _PlayerScreenState extends State<PlayerScreen> {
           },
         ),
       )
-      ..loadRequest(Uri.parse(widget.odyseeUrl));
+      ..loadRequest(Uri.parse(widget.videoUrl));
 
     // Enable hardware acceleration on Android
-    if (controller.platform is AndroidWebViewController) {
+    if (_controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(false);
-      (controller.platform as AndroidWebViewController)
+      (_controller.platform as AndroidWebViewController)
           .setMediaPlaybackRequiresUserGesture(false);
     }
-
-    _controller = controller;
   }
 
   void _toggleFullScreen(bool fullScreen) {
@@ -117,10 +99,20 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('Now Playing'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
       body: SafeArea(
         child: Stack(
           children: [
-            // WebView for Odysee player
             WebViewWidget(controller: _controller),
             
             // Loading indicator

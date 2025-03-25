@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "916844608471",
+    "project_id": "beambox-7c340",
+    "storage_bucket": "beambox-7c340.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:916844608471:android:bf721d17c76b0e1303a992",
+        "android_client_info": {
+          "package_name": "com.example.beambox"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGDBUIuJoRPh5lpU5jtgp3HaLOXWDK_5U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

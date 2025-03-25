@@ -286,20 +286,16 @@ class _SearchScreenState extends State<SearchScreen> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Image
-              CachedNetworkImage(
-                imageUrl: 'https://picsum.photos/400/300?random=${index + 5}',
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: AppTheme.surfaceColor,
-                  child: const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  color: AppTheme.surfaceColor,
-                  child: const Center(
-                    child: Icon(Icons.error),
+              // Use a colored container instead of network image
+              Container(
+                color: index.isEven ? 
+                  AppTheme.primaryColor.withOpacity(0.6) : 
+                  AppTheme.accentColor.withOpacity(0.6),
+                child: Center(
+                  child: Icon(
+                    Icons.trending_up,
+                    color: Colors.white.withOpacity(0.5),
+                    size: 40,
                   ),
                 ),
               ),
@@ -364,23 +360,15 @@ class _SearchScreenState extends State<SearchScreen> {
                   topLeft: Radius.circular(12),
                   bottomLeft: Radius.circular(12),
                 ),
-                child: SizedBox(
+                child: Container(
                   width: 80,
                   height: 100,
-                  child: CachedNetworkImage(
-                    imageUrl: result['image'],
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: AppTheme.surfaceColor,
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: AppTheme.surfaceColor,
-                      child: const Center(
-                        child: Icon(Icons.error, size: 20),
-                      ),
+                  color: AppTheme.cardColor,
+                  child: const Center(
+                    child: Icon(
+                      Icons.movie,
+                      color: Colors.white54,
+                      size: 30,
                     ),
                   ),
                 ),

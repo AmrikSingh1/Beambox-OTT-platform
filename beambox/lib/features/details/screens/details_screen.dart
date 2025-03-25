@@ -52,7 +52,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
         'thumbnailUrl': 'https://picsum.photos/800/450?random=1',
         'backdropUrl': 'https://picsum.photos/1920/1080?random=1',
         'seasons': 0,
-        'odyseeUrl': 'https://odysee.com/@Netflix:a/Black-Mirror-Season-6-Official-Trailer:f',
+        'odyseeUrl': 'https://ody.sh/m8c2h8re9U',
       };
     }
     
@@ -63,8 +63,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => PlayerScreen(
-          contentId: widget.contentId,
-          odyseeUrl: _details['odyseeUrl'] ?? '',
+          videoUrl: 'https://ody.sh/m8c2h8re9U',
         ),
       ),
     );
@@ -190,20 +189,21 @@ class _DetailsScreenState extends State<DetailsScreen> {
               stops: const [0.7, 1.0],
             ),
           ),
-          child: CachedNetworkImage(
-            imageUrl: _details['backdropUrl'],
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              color: AppTheme.primaryColor.withOpacity(0.2),
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppTheme.primaryColor.withOpacity(0.8),
+                AppTheme.accentColor.withOpacity(0.8),
+              ],
             ),
-            errorWidget: (context, url, error) => Container(
-              color: AppTheme.primaryColor.withOpacity(0.2),
-              child: const Center(
-                child: Icon(Icons.error),
-              ),
+          ),
+          child: Center(
+            child: Icon(
+              Icons.movie,
+              size: 80,
+              color: Colors.white.withOpacity(0.5),
             ),
           ),
         ),
@@ -375,23 +375,15 @@ class _DetailsScreenState extends State<DetailsScreen> {
               children: [
                 // Actor avatar
                 ClipOval(
-                  child: SizedBox(
+                  child: Container(
                     width: 60,
                     height: 60,
-                    child: CachedNetworkImage(
-                      imageUrl: 'https://picsum.photos/200?random=${index + 10}',
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: AppTheme.surfaceColor,
-                        child: const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: AppTheme.surfaceColor,
-                        child: const Center(
-                          child: Icon(Icons.error, size: 20),
-                        ),
+                    color: AppTheme.cardColor,
+                    child: const Center(
+                      child: Icon(
+                        Icons.person,
+                        color: Colors.white54,
+                        size: 30,
                       ),
                     ),
                   ),
@@ -426,23 +418,15 @@ class _DetailsScreenState extends State<DetailsScreen> {
         itemBuilder: (context, index) {
           return ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: SizedBox(
+            child: Container(
               width: 120,
               height: 180,
-              child: CachedNetworkImage(
-                imageUrl: 'https://picsum.photos/200/300?random=${index + 20}',
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: AppTheme.surfaceColor,
-                  child: const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  color: AppTheme.surfaceColor,
-                  child: const Center(
-                    child: Icon(Icons.error),
-                  ),
+              color: AppTheme.surfaceColor,
+              child: const Center(
+                child: Icon(
+                  Icons.movie,
+                  color: Colors.white54,
+                  size: 30,
                 ),
               ),
             ),
