@@ -3,9 +3,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 
 import '../../../config/theme.dart';
-import '../../../widgets/custom_button.dart'; // We'll create this later
-import '../../../widgets/custom_text_field.dart'; // We'll create this later
-import '../../home/screens/home_screen.dart'; // We'll create this next
+import '../../../widgets/custom_button.dart';
+import '../../../widgets/custom_text_field.dart';
+import '../../home/screens/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,6 +18,14 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // For easier testing, uncomment this for automatic navigation
+    // _skipLogin();
+  }
 
   @override
   void dispose() {
@@ -37,16 +45,21 @@ class _LoginScreenState extends State<LoginScreen> {
     // For demo purposes, we're just navigating to home screen
     // In a real app, you would validate credentials
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+      setState(() {
+        _isLoading = false;
+      });
+      _navigateToHome();
     }
   }
 
-  void _skipLogin() {
+  void _navigateToHome() {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const HomeScreen()),
     );
+  }
+
+  void _skipLogin() {
+    _navigateToHome();
   }
 
   @override
@@ -216,20 +229,28 @@ class _LoginScreenState extends State<LoginScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Email field
-            _buildTextField(
+            CustomTextField(
+              label: 'Email',
+              hintText: 'Enter your email address',
               controller: _emailController,
-              hintText: 'Email address',
-              icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
+              prefixIcon: Icons.email_outlined,
             ),
             const SizedBox(height: 20),
             
             // Password field
-            _buildTextField(
+            CustomTextField(
+              label: 'Password',
+              hintText: 'Enter your password',
               controller: _passwordController,
-              hintText: 'Password',
-              icon: Icons.lock_outline,
-              isPassword: true,
+              obscureText: _obscurePassword,
+              prefixIcon: Icons.lock_outline,
+              suffixIcon: _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+              onSuffixIconTap: () {
+                setState(() {
+                  _obscurePassword = !_obscurePassword;
+                });
+              },
             ),
             const SizedBox(height: 12),
             
@@ -251,105 +272,46 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 30),
-            
-            // Login button
-            SizedBox(
-              height: 56,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _login,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: _isLoading
-                    ? SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text(
-                        'Sign In',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-              ),
-            ),
             const SizedBox(height: 24),
             
-            // Sign up option
-            Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Don\'t have an account?',
+            // Login button
+            CustomButton(
+              text: 'Login',
+              onPressed: _login,
+              isLoading: _isLoading,
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Don't have an account
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Don\'t have an account? ',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 14,
+                  ),
+                ),
+                TextButton(
+                  onPressed: _skipLogin, // For demo, just skip to home
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    'Sign Up',
                     style: TextStyle(
-                      color: AppTheme.textSecondary,
+                      color: AppTheme.primaryColor,
                       fontSize: 14,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  TextButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.only(left: 4),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      'Sign Up',
-                      style: TextStyle(
-                        color: AppTheme.primaryColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  // Temporary method to create text fields until we create the custom widget
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hintText,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    bool isPassword = false,
-  }) {
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: isPassword,
-        keyboardType: keyboardType,
-        style: const TextStyle(color: AppTheme.textPrimary),
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          hintText: hintText,
-          hintStyle: TextStyle(color: AppTheme.textMuted),
-          prefixIcon: Icon(
-            icon,
-            color: AppTheme.textSecondary,
-            size: 22,
-          ),
         ),
       ),
     );

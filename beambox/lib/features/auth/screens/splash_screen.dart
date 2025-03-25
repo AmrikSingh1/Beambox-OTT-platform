@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:async';
 
 import '../../../config/theme.dart';
-import 'onboarding_screen.dart'; // We'll create this next
+// import 'onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -21,12 +22,16 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _navigateToNextScreen() async {
     // Simulate loading time
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 2));
     
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
-      );
+      // Using GoRouter instead of Navigator.pushReplacement
+      context.go('/home');
+      
+      // Original code that goes to onboarding
+      // Navigator.of(context).pushReplacement(
+      //   MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+      // );
     }
   }
 

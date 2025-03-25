@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../config/theme.dart';
 
@@ -54,16 +55,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         {'title': 'Download Quality', 'icon': Icons.high_quality_outlined},
       ],
     },
-    {
-      'title': 'Support',
-      'icon': Icons.help_outline,
-      'items': [
-        {'title': 'Help Center', 'icon': Icons.help_outline},
-        {'title': 'Contact Us', 'icon': Icons.mail_outline},
-        {'title': 'Report a Problem', 'icon': Icons.bug_report_outlined},
-        {'title': 'About', 'icon': Icons.info_outline},
-      ],
-    },
   ];
 
   @override
@@ -72,14 +63,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: AppTheme.backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 16),
           child: Column(
             children: [
               _buildProfileHeader(),
               const SizedBox(height: 24),
               _buildProfileStats(),
               const SizedBox(height: 32),
-              _buildSettingsSections(),
+              _buildSettingsSection(),
               const SizedBox(height: 24),
               _buildLogoutButton(),
               const SizedBox(height: 40),
@@ -91,107 +81,133 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Row(
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppTheme.surfaceColor,
+            AppTheme.backgroundColor,
+          ],
+        ),
+      ),
+      child: Column(
         children: [
-          // Avatar
-          GlassmorphicContainer(
-            width: 90,
-            height: 90,
-            borderRadius: 45,
-            blur: 10,
-            alignment: Alignment.center,
-            border: 2,
-            linearGradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppTheme.primaryColor.withOpacity(0.2),
-                AppTheme.secondaryColor.withOpacity(0.2),
-              ],
+          // User avatar
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                colors: AppTheme.primaryGradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: AppTheme.primaryShadow,
             ),
-            borderGradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppTheme.primaryColor.withOpacity(0.4),
-                AppTheme.secondaryColor.withOpacity(0.4),
-              ],
-            ),
-            child: Container(
-              width: 82,
-              height: 82,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: NetworkImage(_userData['avatar']),
+            child: Padding(
+              padding: const EdgeInsets.all(3.0), // Border width
+              child: ClipOval(
+                child: CachedNetworkImage(
+                  imageUrl: _userData['avatar'],
                   fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: AppTheme.cardColor,
+                    child: const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: AppTheme.cardColor,
+                    child: const Icon(
+                      Icons.person,
+                      size: 40,
+                      color: Colors.white54,
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 20),
+          )
+              .animate()
+              .fade(duration: 500.ms)
+              .scale(begin: const Offset(0.8, 0.8)),
           
-          // Name and plan info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          const SizedBox(height: 16),
+          
+          // User name
+          Text(
+            _userData['name'],
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          )
+              .animate()
+              .fade(delay: 200.ms, duration: 500.ms)
+              .slideY(begin: 10, end: 0),
+          
+          const SizedBox(height: 4),
+          
+          // User email
+          Text(
+            _userData['email'],
+            style: TextStyle(
+              color: AppTheme.textSecondary,
+              fontSize: 14,
+            ),
+          )
+              .animate()
+              .fade(delay: 300.ms, duration: 500.ms)
+              .slideY(begin: 10, end: 0),
+          
+          const SizedBox(height: 12),
+          
+          // Subscription badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: AppTheme.primaryGradient,
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryColor.withOpacity(0.4),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
+                const Icon(
+                  Icons.star,
+                  color: Colors.white,
+                  size: 16,
+                ),
+                const SizedBox(width: 4),
                 Text(
-                  _userData['name'],
+                  _userData['plan'],
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 24,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  _userData['email'],
-                  style: TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: AppTheme.primaryGradient,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    '${_userData['plan']} Plan',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
               ],
             ),
-          ),
-          
-          // Edit button
-          IconButton(
-            onPressed: () {},
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppTheme.surfaceColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.edit,
-                color: AppTheme.textSecondary,
-                size: 20,
-              ),
-            ),
-          ),
+          )
+              .animate()
+              .fade(delay: 400.ms, duration: 500.ms)
+              .scale(begin: const Offset(0.8, 0.8)),
         ],
       ),
     );
@@ -273,107 +289,120 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSettingsSections() {
-    return Column(
-      children: _settingsOptions.map((section) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-              child: Row(
-                children: [
-                  Icon(
-                    section['icon'] as IconData,
-                    color: AppTheme.primaryColor,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    section['title'] as String,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+  Widget _buildSettingsSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'Settings',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            Column(
-              children: (section['items'] as List<Map<String, dynamic>>).map((item) {
-                return _buildSettingsItem(
-                  title: item['title'] as String,
-                  icon: item['icon'] as IconData,
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 24),
-          ],
-        );
-      }).toList(),
+          ),
+          const SizedBox(height: 16),
+          
+          // Settings groups
+          ..._settingsOptions.map((group) => _buildSettingsGroup(group)).toList(),
+        ],
+      ),
     );
   }
 
-  Widget _buildSettingsItem({
-    required String title,
-    required IconData icon,
-  }) {
-    return InkWell(
-      onTap: () {},
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: AppTheme.textSecondary,
-              size: 22,
+  Widget _buildSettingsGroup(Map<String, dynamic> group) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Group header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Row(
+              children: [
+                Icon(
+                  group['icon'],
+                  color: AppTheme.primaryColor,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  group['title'],
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                title,
+          ),
+          
+          // Group items
+          ...(group['items'] as List<Map<String, dynamic>>).map(
+            (item) => ListTile(
+              leading: Icon(
+                item['icon'],
+                color: AppTheme.textSecondary,
+                size: 20,
+              ),
+              title: Text(
+                item['title'],
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+                color: AppTheme.textMuted,
+                size: 16,
+              ),
+              onTap: () {},
             ),
-            Icon(
-              Icons.chevron_right,
-              color: AppTheme.textMuted,
-              size: 22,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildLogoutButton() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: ElevatedButton.icon(
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      child: ElevatedButton(
         onPressed: () {},
         style: ElevatedButton.styleFrom(
           backgroundColor: AppTheme.surfaceColor,
+          foregroundColor: AppTheme.textSecondary,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          elevation: 0,
         ),
-        icon: Icon(
-          Icons.logout,
-          color: AppTheme.accentColor,
-        ),
-        label: Text(
-          'Logout',
-          style: TextStyle(
-            color: AppTheme.accentColor,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.logout, size: 18),
+            SizedBox(width: 8),
+            Text(
+              'Log Out',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );

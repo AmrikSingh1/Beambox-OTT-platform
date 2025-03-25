@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:glassmorphism/glassmorphism.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../config/theme.dart';
 import '../../player/screens/player_screen.dart';
@@ -32,7 +33,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
       'thumbnailUrl': 'https://picsum.photos/800/450',
       'backdropUrl': 'https://picsum.photos/1920/1080',
       'seasons': 0, // 0 means it's a movie
-      'odyseeUrl': 'https://odysee.com/@Netflix:a/Black-Mirror-Season-6-Official-Trailer:f',
+      'odyseeUrl': 'https://odysee.com/@MovieGasm:d/deadpool-wolverine-avengers-secret-wars:f',
     },
   };
 
@@ -189,9 +190,21 @@ class _DetailsScreenState extends State<DetailsScreen> {
               stops: const [0.7, 1.0],
             ),
           ),
-          child: Image.network(
-            _details['backdropUrl'],
+          child: CachedNetworkImage(
+            imageUrl: _details['backdropUrl'],
             fit: BoxFit.cover,
+            placeholder: (context, url) => Container(
+              color: AppTheme.primaryColor.withOpacity(0.2),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+            errorWidget: (context, url, error) => Container(
+              color: AppTheme.primaryColor.withOpacity(0.2),
+              child: const Center(
+                child: Icon(Icons.error),
+              ),
+            ),
           ),
         ),
         
@@ -361,17 +374,25 @@ class _DetailsScreenState extends State<DetailsScreen> {
             child: Column(
               children: [
                 // Actor avatar
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppTheme.surfaceColor,
-                    image: DecorationImage(
-                      image: NetworkImage(
-                        'https://picsum.photos/200?random=${index + 10}',
-                      ),
+                ClipOval(
+                  child: SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: CachedNetworkImage(
+                      imageUrl: 'https://picsum.photos/200?random=${index + 10}',
                       fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        color: AppTheme.surfaceColor,
+                        child: const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: AppTheme.surfaceColor,
+                        child: const Center(
+                          child: Icon(Icons.error, size: 20),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -403,25 +424,27 @@ class _DetailsScreenState extends State<DetailsScreen> {
         scrollDirection: Axis.horizontal,
         itemCount: 10,
         itemBuilder: (context, index) {
-          return Container(
-            width: 120,
-            margin: const EdgeInsets.only(right: 12),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: AppTheme.surfaceColor,
-              image: DecorationImage(
-                image: NetworkImage(
-                  'https://picsum.photos/200/300?random=${index + 20}',
-                ),
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: SizedBox(
+              width: 120,
+              height: 180,
+              child: CachedNetworkImage(
+                imageUrl: 'https://picsum.photos/200/300?random=${index + 20}',
                 fit: BoxFit.cover,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
+                placeholder: (context, url) => Container(
+                  color: AppTheme.surfaceColor,
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
                 ),
-              ],
+                errorWidget: (context, url, error) => Container(
+                  color: AppTheme.surfaceColor,
+                  child: const Center(
+                    child: Icon(Icons.error),
+                  ),
+                ),
+              ),
             ),
           );
         },
